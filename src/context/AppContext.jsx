@@ -16,7 +16,9 @@ export const AppProvider = ({ children }) => {
   const fetchNewsData = async () => {
     try {
       setEventsLoaded(false);
-      const response = await axios.get("http://localhost:8000/api/news/today");
+      const response = await axios.get(
+        "http://alb-ec2-instances-with-asg-73637164.us-east-2.elb.amazonaws.com/api/news/today",
+      );
 
       if (response.data && Array.isArray(response.data)) {
         setEvents(response.data);
