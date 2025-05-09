@@ -17,7 +17,7 @@ export const AppProvider = ({ children }) => {
     try {
       setEventsLoaded(false);
       const response = await axios.get(
-        "http://alb-ec2-instances-with-asg-73637164.us-east-2.elb.amazonaws.com/api/news/today",
+        "https://alb-ec2-instances-with-asg-73637164.us-east-2.elb.amazonaws.com/api/news/today",
       );
 
       if (response.data && Array.isArray(response.data)) {
