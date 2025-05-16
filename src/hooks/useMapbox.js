@@ -7,6 +7,20 @@ import { useAppContext } from "../context/AppContext";
 mapboxgl.accessToken =
   "pk.eyJ1IjoiaXNhYWMtZXZzIiwiYSI6ImNtOHdoYmp4ZzBmZ2cyd3B3MHRyNHBwaGgifQ.ZQmJFPKar79ixUxSsLpV1g";
 
+// Function to parse WKT Point format
+function parseWktPoint(wktPoint) {
+  if (!wktPoint || typeof wktPoint !== 'string') return null;
+  
+  // Check if it's a WKT POINT format
+  const pointMatch = wktPoint.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+  if (pointMatch) {
+    // Return as [longitude, latitude] array for Mapbox
+    return [parseFloat(pointMatch[1]), parseFloat(pointMatch[2])];
+  }
+  
+  return null;
+}
+
 export default function useMapbox(events) {
   const mapContainer = useRef(null);
   const map = useRef(null); // We'll expose this
@@ -118,11 +132,18 @@ export default function useMapbox(events) {
 
     // Add new markers
     events.forEach((event) => {
+      // Parse coordinates if they're in WKT format
+      let coordinates = event.coordinates;
+      
+      if (typeof coordinates === 'string') {
+        coordinates = parseWktPoint(coordinates);
+      }
+      
       // Check if event has valid coordinates
       if (
-        !event.coordinates ||
-        !Array.isArray(event.coordinates) ||
-        event.coordinates.length !== 2
+        !coordinates ||
+        !Array.isArray(coordinates) ||
+        coordinates.length !== 2
       ) {
         console.warn(
           `Event ${event.id} has invalid coordinates:`,
@@ -157,16 +178,22 @@ export default function useMapbox(events) {
         // Important: Set `anchor` to improve positioning and reduce jitter
         anchor: "center",
       })
-        .setLngLat(event.coordinates)
+        .setLngLat(coordinates)
         .addTo(map.current);
 
       // Add click event
       el.addEventListener("click", () => {
-        setSelectedEvent(event);
+        // Create a copy of the event with parsed coordinates
+        const eventWithParsedCoordinates = {
+          ...event,
+          coordinates: coordinates
+        };
+        
+        setSelectedEvent(eventWithParsedCoordinates);
 
         // Fly to marker
         map.current.flyTo({
-          center: event.coordinates,
+          center: coordinates,
           zoom: 6,
           essential: true,
           duration: 1500,
