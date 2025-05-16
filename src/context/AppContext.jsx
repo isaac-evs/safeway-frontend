@@ -17,7 +17,7 @@ export const AppProvider = ({ children }) => {
     try {
       setEventsLoaded(false);
       const response = await axios.get(
-        "https://api.safestway.click/api/news/today",
+        "https://api.safestway.click/news/",
       );
 
       if (response.data && Array.isArray(response.data)) {
